@@ -1,22 +1,29 @@
 #!/bin/bash
 
+# Exit on error
+set -euo pipefail
+
 GREEN="\033[1;32m"
 RED="\033[1;31m"
 YELLOW="\033[1;33m"
 NC="\033[0m"
 
-if command -v apt > /dev/null 2>&1; then
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if command -v apt &> /dev/null; then
     # Attempt to install nala
-    if ! command -v nala > /dev/null 2>&1; then
-        echo "Attempting to install nala..."
-        if ./install_nala; then
-            echo -e "${GREEN}Nala installed successfully."
+    if ! command -v nala &> /dev/null; then
+        echo -e "${YELLOW}Attempting to install nala...${NC}"
+        if "$SCRIPT_DIR/install_nala"; then
+            echo -e "${GREEN}Nala installed successfully.${NC}"
         else
-            echo -e "${RED}Failed to install nala. Falling back to apt."
+            echo -e "${YELLOW}Failed to install nala. Falling back to apt.${NC}"
         fi
     fi
 
-    echo -e "${YELLOW}Installing dependencies..."
+    echo -e "${YELLOW}Installing dependencies...${NC}"
+    
     # Define a list of main packages
     packages=(
         "xorg-dev"
@@ -31,14 +38,14 @@ if command -v apt > /dev/null 2>&1; then
     # Function to read and append common packages from a file
     read_common_packages() {
         local common_file="$1"
-        if [ -f "$common_file" ]; then
-            while IFS= read -r pkg; do
+        if [[ -f "$common_file" ]]; then
+            while IFS= read -r pkg || [[ -n "$pkg" ]]; do
                 # Ignore empty lines and comments
                 [[ -z "$pkg" || "$pkg" =~ ^# ]] && continue
                 packages+=("$pkg")
             done < "$common_file"
         else
-            echo -e "${RED}Common packages file not found: $common_file"
+            echo -e "${RED}Common packages file not found: $common_file${NC}"
         fi
     }
 
@@ -49,57 +56,55 @@ if command -v apt > /dev/null 2>&1; then
 
         # Check if each package is installed
         for pkg in "${pkgs[@]}"; do
-            if ! dpkg -l | grep -qw "$pkg"; then
+            if ! dpkg -l "$pkg" 2>/dev/null | grep -q "^ii"; then
                 missing_pkgs+=("$pkg")
             fi
         done
 
         # Install missing packages
-        if [ ${#missing_pkgs[@]} -gt 0 ]; then
-            echo -e "${YELLOW}Installing missing packages: ${missing_pkgs[@]}"
-            if command -v nala > /dev/null 2>&1; then
+        if [[ ${#missing_pkgs[@]} -gt 0 ]]; then
+            echo -e "${YELLOW}Installing missing packages: ${missing_pkgs[*]}${NC}"
+            if command -v nala &> /dev/null; then
                 sudo nala update
-                sudo nala install -y "${missing_pkgs[@]}"
+                sudo nala install -y "${missing_pkgs[@]}" || true
             else
                 sudo apt update
-                sudo apt install -y "${missing_pkgs[@]}"
-            fi
-            if [ $? -ne 0 ]; then
-                echo -e "${RED}Failed to install some packages.${NC}"
+                sudo apt install -y "${missing_pkgs[@]}" || true
             fi
         else
             echo -e "${GREEN}All required packages are already installed.${NC}"
         fi
     }
 
-    common_packages_file="$HOME/debain/scripts/common_packages.txt"
+    # Read common packages from file (relative to this script)
+    common_packages_file="$SCRIPT_DIR/common_packages.txt"
     read_common_packages "$common_packages_file"
 
     install_packages "${packages[@]}"
 
     # Enable services
-    sudo systemctl enable avahi-daemon
-    sudo systemctl enable acpid
+    echo -e "${YELLOW}Enabling services...${NC}"
+    sudo systemctl enable avahi-daemon || true
+    sudo systemctl enable acpid || true
 
     # Update user directories
-    xdg-user-dirs-update
+    xdg-user-dirs-update || true
     mkdir -p ~/Screenshots/
 
     # Ensure /usr/share/xsessions directory exists
-    if [ ! -d /usr/share/xsessions ]; then
+    if [[ ! -d /usr/share/xsessions ]]; then
+        echo -e "${YELLOW}Creating /usr/share/xsessions...${NC}"
         sudo mkdir -p /usr/share/xsessions
-        if [ $? -ne 0 ]; then
-            echo "Failed to create /usr/share/xsessions directory. Exiting."
-        fi
     fi
 
-    if ./picom; then
-        echo -e "${GREEN}Picom installed successfully."
+    # Install picom
+    if "$SCRIPT_DIR/picom"; then
+        echo -e "${GREEN}Picom setup completed.${NC}"
     else
-        echo -e "${RED}Failed to install picom."
+        echo -e "${RED}Picom installation failed.${NC}"
     fi
 
 else
-    echo -e "${YELLOW}Launching linutil"
+    echo -e "${YELLOW}APT not found. Launching linutil for package management...${NC}"
     curl -fsSL https://christitus.com/linux | sh
 fi

@@ -1,130 +1,141 @@
 #!/bin/bash
 
+# Exit on error, undefined vars, and pipe failures
+set -euo pipefail
+
+# Colors
 GREEN="\033[1;32m"
 RED="\033[1;31m"
 YELLOW="\033[1;33m"
 NC="\033[0m"
 
-echo -e "${YELLOW}Running script...${NC}"
+# Error handler
+trap 'echo -e "${RED}Error occurred on line $LINENO. Exiting.${NC}"; exit 1' ERR
+
+# Get the directory where this script is located (works even when called from elsewhere)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Define base directories
-USER_HOME="/home/$USER"
+USER_HOME="$HOME"
 CONFIG_DIR="$USER_HOME/.config"
-SCRIPTS_DIR="$USER_HOME/debain/scripts"
-DOTFILES_DIR="$USER_HOME/debain/dotfiles"
-DESTINATION="$CONFIG_DIR"
+SCRIPTS_DIR="$SCRIPT_DIR/scripts"
+DOTFILES_DIR="$SCRIPT_DIR/dotfiles"
 
+echo -e "${YELLOW}============================================${NC}"
+echo -e "${YELLOW}   Debian DWM Post-Installation Script${NC}"
+echo -e "${YELLOW}============================================${NC}"
+echo -e "${GREEN}User: $USER${NC}"
+echo -e "${GREEN}Script Dir: $SCRIPT_DIR${NC}"
+echo -e "${GREEN}Config Dir: $CONFIG_DIR${NC}"
 
-
-
-# Corrected the path to scripts directory for chown
-chown -R "$USER":"$USER" "$SCRIPTS_DIR"
-
-echo -e "${GREEN}---------------------------------------------------"
-echo -e "${GREEN}            Installing dependencies"
-echo -e "${GREEN}---------------------------------------------------${NC}"
-
-# Create directories safely
-mkdir -p "$CONFIG_DIR"
-cd "$SCRIPTS_DIR"
-
-# Make sure all scripts are executable
-
-sudo chmod +x install_packages
-sudo chmod +x install_nala
-sudo chmod +x picom
-./install_packages
-
-
-# Moving dotfiles to correct location
-echo -e "${GREEN}---------------------------------------------------"
-echo -e "       Moving dotfiles to correct location"
-echo -e "---------------------------------------------------${NC}"
-
-if [ -d "$DOTFILES_DIR" ]; then
-    cp -r "$DOTFILES_DIR/alacritty" "$DOTFILES_DIR/backgrounds" "$DOTFILES_DIR/fastfetch" \
-          "$DOTFILES_DIR/kitty" "$DOTFILES_DIR/picom" "$DOTFILES_DIR/rofi" \
-          "$DOTFILES_DIR/suckless" "$DESTINATION/" || { echo -e "${RED}Failed to copy dotfiles.${NC}"; exit 1; }
-
-    cp "$DOTFILES_DIR/.bashrc" "$USER_HOME/" || { echo -e "${RED}Failed to copy .bashrc.${NC}"; exit 1; }
-    cp -r "$DOTFILES_DIR/.local" "$USER_HOME/" || { echo -e "${RED}Failed to copy .local directory.${NC}"; exit 1; }
-    cp "$DOTFILES_DIR/.xinitrc" "$USER_HOME/" || { echo -e "${RED}Failed to copy .xinitrc.${NC}"; exit 1; }
-else
-    echo -e "${RED}Dotfiles directory does not exist.${NC}"
+# Validate directories exist
+if [[ ! -d "$SCRIPTS_DIR" ]]; then
+    echo -e "${RED}Scripts directory not found: $SCRIPTS_DIR${NC}"
     exit 1
 fi
 
-# Fixing permissions
-echo -e "${GREEN}---------------------------------------------------"
-echo -e "            Fixing Home dir permissions"
-echo -e "---------------------------------------------------${NC}"
+if [[ ! -d "$DOTFILES_DIR" ]]; then
+    echo -e "${RED}Dotfiles directory not found: $DOTFILES_DIR${NC}"
+    exit 1
+fi
+
+# Create config directory
+mkdir -p "$CONFIG_DIR"
+
+echo -e "${GREEN}---------------------------------------------------${NC}"
+echo -e "${GREEN}            Installing dependencies${NC}"
+echo -e "${GREEN}---------------------------------------------------${NC}"
+
+# Make scripts executable
+chmod +x "$SCRIPTS_DIR/install_packages"
+chmod +x "$SCRIPTS_DIR/install_nala"
+chmod +x "$SCRIPTS_DIR/picom"
+
+# Run package installation
+cd "$SCRIPTS_DIR"
+./install_packages
+
+echo -e "${GREEN}---------------------------------------------------${NC}"
+echo -e "${GREEN}       Moving dotfiles to correct location${NC}"
+echo -e "${GREEN}---------------------------------------------------${NC}"
+
+# Copy config directories
+for dir in alacritty backgrounds fastfetch kitty picom rofi suckless; do
+    if [[ -d "$DOTFILES_DIR/$dir" ]]; then
+        echo -e "${YELLOW}Copying $dir...${NC}"
+        cp -r "$DOTFILES_DIR/$dir" "$CONFIG_DIR/"
+    fi
+done
+
+# Copy home directory files
+if [[ -f "$DOTFILES_DIR/.bashrc" ]]; then
+    echo -e "${YELLOW}Copying .bashrc...${NC}"
+    cp "$DOTFILES_DIR/.bashrc" "$USER_HOME/"
+fi
+
+if [[ -d "$DOTFILES_DIR/.local" ]]; then
+    echo -e "${YELLOW}Copying .local...${NC}"
+    cp -r "$DOTFILES_DIR/.local" "$USER_HOME/"
+fi
+
+if [[ -f "$DOTFILES_DIR/.xinitrc" ]]; then
+    echo -e "${YELLOW}Copying .xinitrc...${NC}"
+    cp "$DOTFILES_DIR/.xinitrc" "$USER_HOME/"
+fi
+
+echo -e "${GREEN}---------------------------------------------------${NC}"
+echo -e "${GREEN}            Fixing permissions${NC}"
+echo -e "${GREEN}---------------------------------------------------${NC}"
 
 chown -R "$USER":"$USER" "$CONFIG_DIR"
-chown "$USER":"$USER" "$USER_HOME/.bashrc"
-chown -R "$USER":"$USER" "$USER_HOME/.local"
-chown "$USER":"$USER" "$USER_HOME/.xinitrc"
+[[ -f "$USER_HOME/.bashrc" ]] && chown "$USER":"$USER" "$USER_HOME/.bashrc"
+[[ -d "$USER_HOME/.local" ]] && chown -R "$USER":"$USER" "$USER_HOME/.local"
+[[ -f "$USER_HOME/.xinitrc" ]] && chown "$USER":"$USER" "$USER_HOME/.xinitrc"
 
-echo -e "${GREEN}---------------------------------------------------"
-echo -e "${GREEN}                 Updating Timezone"
+echo -e "${GREEN}---------------------------------------------------${NC}"
+echo -e "${GREEN}                 Updating Timezone${NC}"
 echo -e "${GREEN}---------------------------------------------------${NC}"
 
-if command -v apt > /dev/null 2>&1; then
-    sudo dpkg-reconfigure tzdata
+if command -v dpkg-reconfigure &> /dev/null; then
+    echo -e "${YELLOW}Configuring timezone (interactive)...${NC}"
+    sudo dpkg-reconfigure tzdata || echo -e "${YELLOW}Timezone config skipped${NC}"
 else
-    echo -e "${YELLOW}Unable to detect APT. Skipping."
+    echo -e "${YELLOW}dpkg-reconfigure not found. Skipping timezone.${NC}"
 fi
 
-echo -e "${GREEN}---------------------------------------------------"
-echo -e "${GREEN}            Building DWM and SLStatus"
+echo -e "${GREEN}---------------------------------------------------${NC}"
+echo -e "${GREEN}            Building DWM and SLStatus${NC}"
 echo -e "${GREEN}---------------------------------------------------${NC}"
 
-cd "$HOME/.config/suckless/dwm"
-sudo make clean install 
-cd "$HOME/.config/suckless/slstatus"
-sudo make clean install 
+# Build suckless tools
+for tool in dwm slstatus; do
+    TOOL_DIR="$CONFIG_DIR/suckless/$tool"
+    if [[ -d "$TOOL_DIR" ]]; then
+        echo -e "${YELLOW}Building $tool...${NC}"
+        cd "$TOOL_DIR"
+        sudo make clean install
+    else
+        echo -e "${RED}$tool directory not found: $TOOL_DIR${NC}"
+    fi
+done
 
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}Build completed successfully.${NC}"
-else
-    echo -e "${RED}Build failed. Check the log file for details: $LOG_FILE${NC}"
-fi
+echo -e "${GREEN}---------------------------------------------------${NC}"
+echo -e "${GREEN}         Installation Complete!${NC}"
+echo -e "${GREEN}---------------------------------------------------${NC}"
 
-# echo -e "${GREEN}---------------------------------------------------${NC}"
-# echo -e "${GREEN}    Do you want to start Linux Toolbox? (y/n)"
-# echo -e "${GREEN}---------------------------------------------------${NC}"
+echo -e "${YELLOW}Next steps:${NC}"
+echo -e "  1. Log out and select DWM from your display manager"
+echo -e "  2. Or run: startx (if using .xinitrc)"
+echo ""
 
-# read response
-
-# if [[ "$response" == "y" || "$response" == "Y" ]]; then
-#     echo -e "${YELLOW}Press Q to exit ${NC}"
-#     echo -e "${GREEN}Launching in...${NC}"
-
-#     echo -e "${YELLOW}5..${NC}"
-#     sleep 1
-#     echo -e "${YELLOW}4..${NC}"
-#     sleep 1
-#     echo -e "${YELLOW}3..${NC}"
-#     sleep 1
-#     echo -e "${YELLOW}2..${NC}"
-#     sleep 1
-#     echo -e "${YELLOW}1..${NC}"
-
-#     curl -fsSL https://christitus.com/linux | sh
-# else
-#     echo -e "${GREEN}Skipping...${NC}"
-# fi
-
-# echo -e "${GREEN}---------------------------------------------------"
-# echo -e "${GREEN}     Script finished. Reboot is recommended"
-# echo -e "${GREEN}---------------------------------------------------${NC}"
-# echo -e "${GREEN}    Do you want to restart the system now? (y/n)"
-# echo -e "${GREEN}---------------------------------------------------${NC}"
-
-# read response
-
-# if [[ "$response" == "y" || "$response" == "Y" ]]; then
-#     echo -e "${GREEN}Restarting the system...${NC}"
-#     sudo reboot
-# else
-#     echo -e "${GREEN}Restart skipped. Please remember to restart your system later.${NC}"
-# fi
+# Ask about reboot
+read -r -p "Do you want to restart now? (y/n): " response
+case "$response" in
+    [Yy]*)
+        echo -e "${GREEN}Restarting...${NC}"
+        sudo reboot
+        ;;
+    *)
+        echo -e "${GREEN}Restart skipped. Remember to log out/restart to use DWM.${NC}"
+        ;;
+esac

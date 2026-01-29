@@ -1,28 +1,53 @@
-# Sevu11's Post Installation Scripts
+# Debian DWM Post-Installation
 
-```
-If you're looking for a minimal Arch Linux install:
-Fully automated under 3 minutes >> https://github.com/sevu11/arch-server-script
-```
+Personal dotfiles and post-installation scripts for setting up DWM on Debian-based systems.
 
-My personal dotfiles and post-installation scripts for a new Linux install.
-<br/>
-The scripts are made for Debian but can be used on any distro with the inclusion of [Linutil](https://github.com/ChrisTitusTech/linutil). 
-<br/>
-The building for suckless (DWM, SLStatus) should work, as long you install the build dependencies.
+![Demo](demo.png)
 
-## Instructions
-```
-git clone https://github.com/sevu11/Linux-Post-Installation.git
-cd Linux-Post-Installation
+## Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/rahuljangirworks/debian-dwm.git
+cd debian-dwm
+
+# Run the installer
 chmod +x install.sh
 ./install.sh
 ```
-## Demo
-![Script output](https://raw.githubusercontent.com/sevu11/Linux-Post-Installation/main/demo.png)
 
+## What It Does
 
+1. **Installs packages** - Nala, Xorg, DWM build dependencies, and common utilities
+2. **Copies dotfiles** - Configurations for DWM, Rofi, Picom, Alacritty, Kitty, etc.
+3. **Builds suckless tools** - Compiles DWM and slstatus from source
+4. **Builds Picom** - Installs FT-Labs compositor with blur support
 
-## Credit
-* Install package code is inspired by drewgrif [LINK](https://github.com/drewgrif)
-* ChrisTitusTech for the Linutil [LINK](https://github.com/ChrisTitusTech)
+## Included Configurations
+
+| Component | Description |
+|-----------|-------------|
+| **DWM** | Dynamic window manager |
+| **slstatus** | Status bar for DWM |
+| **Rofi** | Application launcher |
+| **Picom** | Compositor (transparency/blur) |
+| **Alacritty/Kitty** | GPU-accelerated terminals |
+| **Fastfetch** | System info display |
+
+## Requirements
+
+- Debian-based system (Debian, Ubuntu, Mint, etc.)
+- `sudo` access
+- Git
+
+## After Installation
+
+1. Log out
+2. Select "DWM" from your display manager
+3. Or run `startx` if using `.xinitrc`
+
+## Credits
+
+- [drewgrif](https://github.com/drewgrif) - Package installation inspiration
+- [ChrisTitusTech](https://github.com/ChrisTitusTech) - Linutil fallback
+- [sevu11](https://github.com/sevu11) - Original project base

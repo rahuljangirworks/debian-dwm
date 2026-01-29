@@ -1,14 +1,11 @@
 #!/bin/bash
 
 install_nala() {
-    if command -v apt > /dev/null 2>&1; then
+    if command -v apt &> /dev/null; then
         echo "Installing nala..."
         sudo apt update
         sudo apt install -y nala
-        if [ $? -ne 0 ]; then
-            echo "Failed to install nala."
-            return 1
-        fi
+        return $?
     else
         echo "APT not found. Cannot install nala."
         return 1
