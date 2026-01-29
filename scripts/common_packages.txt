@@ -6,6 +6,10 @@ xbindkeys
 xvkbd
 xinput
 
+# VM guest tools (for copy/paste in virt-manager)
+spice-vdagent
+qemu-guest-agent
+
 # Build tools and DWM dependencies (CRITICAL - needed for make)
 build-essential
 git
