@@ -6,7 +6,7 @@ xbindkeys
 xvkbd
 xinput
 
-# Build tools and DWM dependencies
+# Build tools and DWM dependencies (CRITICAL - needed for make)
 build-essential
 git
 libx11-dev
@@ -14,11 +14,6 @@ libxft-dev
 libxinerama-dev
 libfreetype6-dev
 libfontconfig1-dev
-
-# Policykit (Debian 13+ compatible)
-polkitd
-policykit-1
-pkexec
 
 # Network
 network-manager
@@ -61,7 +56,7 @@ libnotify-dev
 xdotool
 unzip
 
-# Terminal replacement for exa (eza is the fork)
+# Terminal replacement for exa (eza is the fork in Debian 13)
 eza
 
 # Editors
