@@ -24,13 +24,12 @@ if command -v apt &> /dev/null; then
 
     echo -e "${YELLOW}Installing dependencies...${NC}"
     
-    # Define a list of main packages
+    # Define a list of main packages (inline, additional to common_packages.txt)
     packages=(
-        "xorg-dev"
         "sxhkd"
         "firefox-esr"
-        "tilix"
         "kitty"
+        "alacritty"
         "flameshot"
         "ranger"
     )
@@ -82,10 +81,14 @@ if command -v apt &> /dev/null; then
 
     install_packages "${packages[@]}"
 
-    # Enable services
+    # Enable services (only if they exist)
     echo -e "${YELLOW}Enabling services...${NC}"
-    sudo systemctl enable avahi-daemon || true
-    sudo systemctl enable acpid || true
+    if systemctl list-unit-files | grep -q avahi-daemon; then
+        sudo systemctl enable avahi-daemon
+    fi
+    if systemctl list-unit-files | grep -q acpid; then
+        sudo systemctl enable acpid
+    fi
 
     # Update user directories
     xdg-user-dirs-update || true

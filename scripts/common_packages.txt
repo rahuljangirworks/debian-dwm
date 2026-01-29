@@ -1,45 +1,70 @@
+# Xorg and display
 xorg
 xserver-xorg
 xbacklight
 xbindkeys
 xvkbd
 xinput
+
+# Build tools and DWM dependencies
 build-essential
 git
-policykit-1-gnome
+libx11-dev
+libxft-dev
+libxinerama-dev
+libfreetype6-dev
+libfontconfig1-dev
+
+# Policykit (Debian 13+ compatible)
+polkitd
+policykit-1
+pkexec
+
+# Network
 network-manager
 network-manager-gnome
+
+# Audio
+pulseaudio
+pavucontrol
 pamixer
+pulsemixer
+
+# File management
 thunar
 thunar-archive-plugin
 thunar-volman
 file-roller
+gvfs-backends
+
+# Appearance
 lxappearance
+papirus-icon-theme
+fonts-recommended
+fonts-font-awesome
+fonts-terminus
+
+# Utilities
 dialog
 mtools
 dosfstools
 avahi-daemon
 acpi
 acpid
-gvfs-backends
 xfce4-power-manager
-pulseaudio
-pavucontrol
-pamixer
-pulsemixer
 feh
-fonts-recommended
-fonts-font-awesome
-fonts-terminus
-papirus-icon-theme
-exa
 scrot
 rofi
 dunst
 libnotify-bin
+libnotify-dev
 xdotool
 unzip
-libnotify-dev
+
+# Terminal replacement for exa (eza is the fork)
+eza
+
+# Editors
 micro
 geany
 geany-plugin-addons
@@ -50,4 +75,6 @@ geany-plugin-markdown
 geany-plugin-insertnum
 geany-plugin-lineoperations
 geany-plugin-automark
+
+# Other
 redshift
