@@ -135,7 +135,7 @@ echo -e "${GREEN}---------------------------------------------------${NC}"
 
 # Ensure DWM build dependencies are installed
 echo -e "${YELLOW}Installing DWM build dependencies...${NC}"
-sudo apt install -y build-essential libx11-dev libxft-dev libxinerama-dev libfreetype6-dev libfontconfig1-dev libimlib2-dev libxcb-res0-dev || true
+sudo apt install -y build-essential libx11-dev libxft-dev libxinerama-dev libfreetype6-dev libfontconfig1-dev libimlib2-dev libxcb-res0-dev curl || true
 
 # Build suckless tools
 for tool in dwm slstatus; do
