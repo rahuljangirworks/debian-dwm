@@ -2,6 +2,7 @@ live_config_reload = true
 working_directory = "None"
 
 # Themes --
+[general]
 import = [ 
   "~/.config/alacritty/nordic.toml",
   "~/.config/alacritty/keybinds.toml"

@@ -59,6 +59,8 @@ libnotify-bin
 libnotify-dev
 xdotool
 unzip
+zoxide
+fastfetch
 
 # Terminal replacement for exa (eza is the fork in Debian 13)
 eza

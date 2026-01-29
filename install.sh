@@ -110,6 +110,19 @@ else
     echo -e "${YELLOW}dpkg-reconfigure not found. Skipping timezone.${NC}"
 fi
 
+
+# Install Starship (Prompt)
+if ! command -v starship &> /dev/null; then
+    echo -e "${YELLOW}Installing Starship...${NC}"
+    curl -sS https://starship.rs/install.sh | sh -s -- -y
+fi
+
+# Install Rustup (needed for .cargo/env in bashrc)
+if [[ ! -f "$HOME/.cargo/env" ]]; then
+    echo -e "${YELLOW}Installing Rustup...${NC}"
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+fi
+
 echo -e "${GREEN}---------------------------------------------------${NC}"
 echo -e "${GREEN}            Building DWM and SLStatus${NC}"
 echo -e "${GREEN}---------------------------------------------------${NC}"
