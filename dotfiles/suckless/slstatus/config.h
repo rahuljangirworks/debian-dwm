@@ -57,12 +57,12 @@ check_updates       	Check for updates               NULL
 
 static const struct arg args[] = {
 /* 	function format  	argument */
-	{ run_command, 		" %s", 					"/home/johan/.scripts/openweather" },
-	{ cat, 				"  %s", 				"/home/johan/.scripts/avail_archupdates.txt" },
-	{ run_command, 		"  %s", 				"/home/johan/.scripts/kernel" },
-	{ run_command, 		"  %s", 				"/home/johan/.scripts/volume" },
+	{ run_command, 		" %s", 					"~/.scripts/openweather" },
+	{ run_command, 		"  %s", 				"cat ~/.scripts/avail_archupdates.txt 2>/dev/null || echo '0'" },
+	{ run_command, 		"  %s", 				"~/.scripts/kernel" },
+	{ run_command, 		"  %s", 				"~/.scripts/volume" },
 	{ cpu_perc, 	 	"   %s%%", 			NULL },
-	{ run_command, 		"   %s", 				"free -g | awk '/^Mem:/ {print $3 \"G/\" $2 \"G\"}'" },
+	{ run_command, 		"   %s", 				"free -m | awk '/^Mem:/ {print int($3/1024) \"G/\" int($2/1024) \"G\"}'" },
 	{ datetime, 		"  󰥔 %s", "%a %b %-d"  },
- 	{ datetime, 		" %s", "%H:%M:%S " 		},	
+	{ datetime, 		" %s", "%H:%M:%S " 		},	
 };

@@ -83,6 +83,12 @@ if [[ -f "$DOTFILES_DIR/.xinitrc" ]]; then
     cp "$DOTFILES_DIR/.xinitrc" "$USER_HOME/"
 fi
 
+if [[ -d "$DOTFILES_DIR/.scripts" ]]; then
+    echo -e "${YELLOW}Copying .scripts...${NC}"
+    cp -r "$DOTFILES_DIR/.scripts" "$USER_HOME/"
+    chmod +x "$USER_HOME/.scripts/"*
+fi
+
 echo -e "${GREEN}---------------------------------------------------${NC}"
 echo -e "${GREEN}            Fixing permissions${NC}"
 echo -e "${GREEN}---------------------------------------------------${NC}"
@@ -137,6 +143,7 @@ for tool in dwm slstatus; do
     if [[ -d "$TOOL_DIR" ]]; then
         echo -e "${YELLOW}Building $tool...${NC}"
         cd "$TOOL_DIR"
+        # If I edited config.h, make clean install works.
         sudo make clean install
     else
         echo -e "${RED}$tool directory not found: $TOOL_DIR${NC}"
