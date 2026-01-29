@@ -87,10 +87,17 @@ echo -e "${GREEN}---------------------------------------------------${NC}"
 echo -e "${GREEN}            Fixing permissions${NC}"
 echo -e "${GREEN}---------------------------------------------------${NC}"
 
-chown -R "$USER":"$USER" "$CONFIG_DIR"
-[[ -f "$USER_HOME/.bashrc" ]] && chown "$USER":"$USER" "$USER_HOME/.bashrc"
-[[ -d "$USER_HOME/.local" ]] && chown -R "$USER":"$USER" "$USER_HOME/.local"
-[[ -f "$USER_HOME/.xinitrc" ]] && chown "$USER":"$USER" "$USER_HOME/.xinitrc"
+# Fix permissions (exclude picom build directory which has root-owned files)
+sudo chown -R "$USER":"$USER" "$CONFIG_DIR" 2>/dev/null || true
+[[ -f "$USER_HOME/.bashrc" ]] && sudo chown "$USER":"$USER" "$USER_HOME/.bashrc"
+[[ -f "$USER_HOME/.xinitrc" ]] && sudo chown "$USER":"$USER" "$USER_HOME/.xinitrc"
+
+# Fix .local but exclude src (contains build files)
+if [[ -d "$USER_HOME/.local" ]]; then
+    # Fix bin and share
+    [[ -d "$USER_HOME/.local/bin" ]] && sudo chown -R "$USER":"$USER" "$USER_HOME/.local/bin"
+    [[ -d "$USER_HOME/.local/share" ]] && sudo chown -R "$USER":"$USER" "$USER_HOME/.local/share"
+fi
 
 echo -e "${GREEN}---------------------------------------------------${NC}"
 echo -e "${GREEN}                 Updating Timezone${NC}"
